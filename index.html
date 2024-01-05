@@ -1,0 +1,91 @@
+<html>
+<body>
+  <div id="root"></div>
+</body>
+<link rel="stylesheet" href="styles.css">
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react?dev",
+    "react-dom/client": "https://esm.sh/react-dom/client?dev"
+  }
+}
+</script>
+<script type="text/babel" data-type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+
+function Puppy({puppy}){
+    return (
+       <div id="singleItem">
+           <h2>
+              <a href="#">{ puppy.name }</a>
+            </h2>
+            <p >{ puppy.breed }</p>
+            <img src={puppy.imageUrl} />
+        </div>
+    );
+}
+
+function Puppies({puppies}){
+    return (
+       <ul>
+        {
+            puppies.map(function(puppy){
+                return (
+                    <li key={ puppy.id }>
+                        <a href={`#${puppy.id}`}>{ puppy.name }</a>
+                        <p>{ puppy.breed }</p>
+                        <img src={puppy.imageUrl} />
+                    </li>
+                );
+            })
+        }
+        </ul>
+    );
+}
+
+function Title({puppies}){
+    return (
+       <h1>Puppy Bowl {puppies.length}</h1>
+    );
+}
+
+function App() {
+    const [puppies, setPuppies] = React.useState([]);
+    const [id, setId] = React.useState(window.location.hash.slice(1));
+
+    React.useEffect(function(){
+        async function getPuppies() {
+            const res = await fetch('https://fsa-puppy-bowl.herokuapp.com/api/2309-ftb-et-am/players');
+            const json = await res.json();
+            setPuppies(json.data.players);
+        }
+        getPuppies();
+
+        window.addEventListener('hashchange', function(){
+            setId(window.location.hash.slice(1));
+        })  
+    }, []);
+
+    const puppy = puppies.find(puppy => puppy.id === id*1);
+
+    return (
+       <div>
+           <Title puppies={ puppies } />
+           {
+               puppy ? (
+                <Puppy puppy={ puppy } />
+               ):(
+                <Puppies puppies={ puppies } />
+               )
+           }
+        </div>
+    );
+}
+
+
+
+createRoot(document.getElementById('root')).render(<App />);
